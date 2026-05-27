@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: readwell-backend
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+      - /app/.next
+    networks:
+      - readwell-net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: readwell-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      BACKEND_URL: http://backend:4000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.nuxt
+    depends_on:
+      - backend
+    networks:
+      - readwell-net
+    restart: unless-stopped
+
+networks:
+  readwell-net:
+    driver: bridge
