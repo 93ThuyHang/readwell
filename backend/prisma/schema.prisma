@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Post {
+  id           Int       @id @default(autoincrement())
+  slug         String    @unique
+  title        String
+  categories   String[]
+  date         String
+  author       String
+  readTime     String
+  paragraphs   Json
+  embed        Json
+  afterEmbed   String?
+  bookEmbed    Json?
+  videoEmbed   Json?
+  hashtags     String[]
+  likes        Int       @default(0)
+  comments     Int       @default(0)
+  createdAt    DateTime  @default(now())
+  commentsList Comment[]
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  postId    Int
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author    String
+  content   String
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String @unique
+  slug  String @unique
+  color String @default("#6366f1")
+}
+
+model Stats {
+  id         Int @id @default(1)
+  books      Int
+  reviews    Int
+  videos     Int
+  recentDays Int
+}
+
+model FeaturedQuote {
+  id          Int    @id @default(1)
+  quote       String
+  attribution String
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
