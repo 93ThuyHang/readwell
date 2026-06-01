@@ -191,6 +191,10 @@
   .pf-btn:hover { border-color: var(--ink4); color: var(--ink); }
   .pf-btn.faved { color: var(--rust); border-color: rgba(184,80,32,0.25); background: var(--rust-s); }
 
+  /* XEM THÊM */
+  .readmore-btn { font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700; color: var(--rust); background: none; border: none; cursor: pointer; padding: 2px 0; margin: 4px 0 16px; display: inline-flex; align-items: center; gap: 5px; transition: opacity 0.15s; }
+  .readmore-btn:hover { opacity: 0.7; }
+
   /* MODALS */
   .overlay { position: fixed; inset: 0; background: rgba(30,20,8,0.6); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .overlay.open { opacity: 1; pointer-events: all; }

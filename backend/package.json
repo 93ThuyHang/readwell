@@ -3,13 +3,37 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 4000",
+    "dev": "next dev -p 5000",
     "build": "next build",
-    "start": "next start -p 4000"
+    "start": "next start -p 5000"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "@tailwindcss/postcss": "^4.3.0",
+    "@tiptap/extension-underline": "^3.24.0",
+    "@tiptap/react": "^3.24.0",
+    "@tiptap/starter-kit": "^3.24.0",
+    "autoprefixer": "^10.5.0",
+    "bcryptjs": "^3.0.3",
+    "jose": "^6.2.3",
     "next": "^14.2.0",
+    "pg": "^8.21.0",
+    "postcss": "^8.5.15",
+    "prisma": "^7.8.0",
     "react": "^18.3.0",
-    "react-dom": "^18.3.0"
+    "react-dom": "^18.3.0",
+    "tailwindcss": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "25.9.1",
+    "@types/react": "19.2.15",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.22.3",
+    "typescript": "6.0.3"
   }
 }

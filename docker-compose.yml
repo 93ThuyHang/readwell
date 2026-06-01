@@ -1,19 +1,36 @@
 version: '3.8'
 
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: readwell-db
+    environment:
+      POSTGRES_DB: readwell
+      POSTGRES_USER: readwell
+      POSTGRES_PASSWORD: readwell123
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - readwell-net
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: readwell-backend
     ports:
-      - "4000:4000"
+      - "5000:5000"
     environment:
       NODE_ENV: development
+      DATABASE_URL: postgresql://readwell:readwell123@db:5432/readwell
+      JWT_SECRET: readwell-admin-secret-change-in-production
     volumes:
       - ./backend:/app
       - /app/node_modules
       - /app/.next
+    depends_on:
+      - db
     networks:
       - readwell-net
     restart: unless-stopped
@@ -27,7 +44,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
-      BACKEND_URL: http://backend:4000
+      BACKEND_URL: http://backend:5000
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -37,6 +54,9 @@ services:
     networks:
       - readwell-net
     restart: unless-stopped
+
+volumes:
+  pgdata:
 
 networks:
   readwell-net:

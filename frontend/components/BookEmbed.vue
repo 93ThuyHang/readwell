@@ -1,8 +1,11 @@
 <template>
   <div class="book-card">
-    <div class="bc-emoji">{{ book.emoji || '📖' }}</div>
+    <div class="bc-emoji">
+      <span v-if="book.emoji">{{ book.emoji }}</span>
+      <BookOpen v-else :size="22" />
+    </div>
     <div class="bc-info">
-      <div class="bc-eyebrow">{{ book.status || '✦ Đã đọc xong' }}</div>
+      <div class="bc-eyebrow"><Check :size="12" /> {{ book.status || 'Đã đọc xong' }}</div>
       <div class="bc-title">{{ book.bookTitle }}</div>
       <div class="bc-author">{{ book.bookAuthor }}</div>
       <div class="bc-chips">
@@ -16,7 +19,8 @@
           ></div>
         </div>
         <div class="bc-pct" :style="{ color: book.barColor || '#2e5878' }">
-          {{ barWidth === 100 ? '✓ Xong' : barWidth + '%' }}
+          <template v-if="barWidth === 100"><Check :size="12" /> Xong</template>
+          <template v-else>{{ barWidth }}%</template>
         </div>
       </div>
     </div>
@@ -24,6 +28,8 @@
 </template>
 
 <script setup lang="ts">
+import { BookOpen, Check } from 'lucide-vue-next'
+
 const props = defineProps<{
   book: {
     bookTitle: string
