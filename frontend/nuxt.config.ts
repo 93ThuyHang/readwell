@@ -12,6 +12,7 @@ export default defineNuxtConfig({
         { name: 'description', content: 'Nhật ký đọc sách — những trang sách làm mình dừng lại.' },
       ],
       link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {

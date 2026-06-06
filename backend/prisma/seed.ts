@@ -1,9 +1,9 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-const prisma = new PrismaClient({
-  datasources: { db: { url: process.env.DATABASE_URL } },
-})
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   await prisma.post.createMany({
@@ -29,8 +29,8 @@ async function main() {
         },
         afterEmbed: 'Mình nghĩ lý do cuốn sách này vẫn tồn tại được hơn 2000 năm không phải vì nó "khôn ngoan" — mà vì nó thành thật một cách không che giấu. Ai cũng có một Marcus Aurelius bên trong đang cố gắng nhắc mình đừng hổ thẹn với bản thân.',
         hashtags: ['#Marcus', '#MarcusAurelius', '#Triết'],
-        likes: 47,
-        comments: 3,
+        likes: 0,
+        comments: 0,
       },
       {
         slug: 'he-thong-quan-trong-hon-muc-tieu',
@@ -52,8 +52,8 @@ async function main() {
         },
         afterEmbed: 'James Clear không nói gì mới. Ông chỉ nói thứ chúng ta đã biết — nhưng nói theo cách khiến mình không thể tiếp tục làm lơ nó nữa.',
         hashtags: ['#AtomicHabits', '#ThóiQuen', '#TríchdẫnSách'],
-        likes: 38,
-        comments: 5,
+        likes: 0,
+        comments: 0,
       },
       {
         slug: 'lan-dau-tien-minh-cam-thay-nhe-nhom',
@@ -82,8 +82,8 @@ async function main() {
           pages: 499,
         },
         hashtags: ['#Fast', '#Kahneman', '#NhậnThức'],
-        likes: 52,
-        comments: 8,
+        likes: 0,
+        comments: 0,
       },
       {
         slug: 'bay-gio-sang-ca-phe-con-nong',
@@ -105,8 +105,8 @@ async function main() {
         },
         afterEmbed: 'Câu trả lời của mình buổi sáng đó là khoảng 40%. Và mình nghĩ đó là một buổi sáng thật tốt rồi.',
         hashtags: ['#ThePowerOfNow', '#Mindfulness', '#EckhartTolle'],
-        likes: 29,
-        comments: 2,
+        likes: 0,
+        comments: 0,
       },
     ],
     skipDuplicates: true,
@@ -127,6 +127,12 @@ async function main() {
       attribution: 'Zig Ziglar',
     },
   })
+
+  const adminHash = '$2b$12$4FkpvbV2CrPpv.CDb/KcseL9BDNxnFEB9LuN0goBwYhePJOEelOsK'
+  const existingAdmin = await prisma.$queryRaw`SELECT id FROM "AdminUser" WHERE username = 'readwellAdmin'` as any[]
+  if (existingAdmin.length === 0) {
+    await prisma.$executeRaw`INSERT INTO "AdminUser" (username, "passwordHash", "createdAt") VALUES ('readwellAdmin', ${adminHash}, NOW())`
+  }
 
   console.log('Seed done.')
 }

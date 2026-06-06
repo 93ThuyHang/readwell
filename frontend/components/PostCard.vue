@@ -55,8 +55,9 @@
         <span v-for="tag in post.hashtags" :key="tag" class="pf-tag">{{ tag }}</span>
       </div>
       <div class="pf-actions">
-        <button :class="['pf-btn', { faved: liked }]" @click="toggleLike">
-          <Heart :size="13" :fill="liked ? 'currentColor' : 'none'" /> Yêu thích
+        <button :class="['pf-btn', { faved: liked }]" @click="toggleLike" :disabled="liked">
+          <Heart :size="13" :fill="liked ? 'currentColor' : 'none'" />
+          {{ likeCount > 0 ? likeCount : '' }} Yêu thích
         </button>
         <button class="pf-btn" @click="$emit('toast', 'Đã copy link!')">
           <Share2 :size="13" /> Chia sẻ
@@ -110,8 +111,14 @@ function stripHtml(html: string) {
   return html.replace(/<[^>]+>/g, '')
 }
 
+const likeCount = ref(props.post.likes ?? 0)
 const liked = ref(false)
 const expanded = ref(false)
+
+onMounted(() => {
+  const key = `liked:${props.post.slug}`
+  if (localStorage.getItem(key)) liked.value = true
+})
 
 const kicker = computed(() => {
   const cats = props.post.categories ?? []
@@ -159,7 +166,21 @@ const remainingParas = computed(() => {
   return paras.slice(2)
 })
 
-function toggleLike() {
-  liked.value = !liked.value
+async function toggleLike() {
+  if (liked.value || !props.post.slug) return
+  liked.value = true
+  likeCount.value++
+  localStorage.setItem(`liked:${props.post.slug}`, '1')
+  try {
+    const res = await fetch(`/api/posts/${props.post.slug}/like`, { method: 'POST' })
+    if (res.ok) {
+      const data = await res.json()
+      likeCount.value = data.likes
+    }
+  } catch {
+    liked.value = false
+    likeCount.value--
+    localStorage.removeItem(`liked:${props.post.slug}`)
+  }
 }
 </script>

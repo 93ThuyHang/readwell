@@ -5,7 +5,7 @@
       <BookOpen v-else :size="22" />
     </div>
     <div class="bc-info">
-      <div class="bc-eyebrow"><Check :size="12" /> {{ book.status || 'Đã đọc xong' }}</div>
+      <div class="bc-eyebrow flex items-center gap-1"><Check :size="12" /> {{ book.status || 'Đã đọc xong' }}</div>
       <div class="bc-title">{{ book.bookTitle }}</div>
       <div class="bc-author">{{ book.bookAuthor }}</div>
       <div class="bc-chips">
