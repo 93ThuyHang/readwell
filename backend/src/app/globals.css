@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Preview drop cap */
+.preview-drop-cap::first-letter {
+  font-family: "Playfair Display", serif;
+  font-size: 52px;
+  font-weight: 700;
+  float: left;
+  line-height: 0.82;
+  margin: 6px 8px 0 0;
+  color: #b85020;
+}
+
+/* TipTap editor content */
+.tiptap p { margin-bottom: 0.75em; }
+.tiptap p:last-child { margin-bottom: 0; }
+.tiptap ul { list-style: disc; padding-left: 1.4em; margin-bottom: 0.75em; }
+.tiptap li { margin-bottom: 0.25em; }
+.tiptap strong { font-weight: 600; }
+.tiptap em { font-style: italic; }

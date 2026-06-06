@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AppHeader @open-write="writeOpen = true" />
+    <AppHeader />
 
     <div class="page-grid">
       <!-- HERO -->
@@ -29,7 +29,7 @@
         </div>
 
         <div class="margin-streak">
-          <div class="ms-fire">🔥</div>
+          <div class="ms-fire"><Flame :size="20" /></div>
           <div class="ms-n">{{ statsData?.recentDays ?? 7 }}</div>
           <div class="ms-t">ngày liên tiếp</div>
         </div>
@@ -37,7 +37,7 @@
         <div>
           <div class="margin-label">Quote gần đây</div>
           <div v-for="mq in miniQuotes" :key="mq.text" class="margin-quote" style="margin-bottom:16px">
-            <div class="mq-mini" @click="openVideo(mq.text)">"{{ mq.text }}"</div>
+            <div class="mq-mini">"{{ mq.text }}"</div>
             <div class="mq-mini-src">{{ mq.src }}</div>
           </div>
         </div>
@@ -72,10 +72,9 @@
           </button>
         </div>
 
-        <div class="toc-mini-quote" @click="openVideo(miniQuotes[0].text)">
+        <div class="toc-mini-quote">
           <div class="tmq-text">"{{ miniQuotes[0].text }}"</div>
           <div class="tmq-src">{{ miniQuotes[0].src }}</div>
-          <button class="tmq-vid">🎬 Tạo video từ câu này</button>
         </div>
 
         <div class="toc-block">
@@ -96,126 +95,14 @@
 
     <AppFooter />
 
-    <!-- WRITE MODAL -->
-    <div :class="['overlay', { open: writeOpen }]" @click.self="writeOpen = false">
-      <div class="modal">
-        <div class="modal-hdr">
-          <div class="modal-title">Viết bài mới</div>
-          <button class="modal-x" @click="writeOpen = false">✕</button>
-        </div>
-        <div class="type-row">
-          <button
-            v-for="t in writeTypes"
-            :key="t.id"
-            :class="['type-btn', { active: writeType === t.id }]"
-            @click="writeType = t.id"
-          >{{ t.label }}</button>
-        </div>
-
-        <template v-if="writeType === 'note'">
-          <div class="mf"><div class="ml">Tiêu đề</div><input class="mi" placeholder="Bỏ trống nếu muốn viết tự do..."></div>
-          <div class="mf"><div class="ml">Bài viết</div><textarea class="mta" style="min-height:160px" placeholder="Hôm nay bạn đọc được điều gì khiến bạn dừng lại?&#10;&#10;Viết thật, viết cho chính mình..."></textarea></div>
-          <div class="mf"><div class="ml">Quote đính kèm (tùy chọn)</div><textarea class="mta" style="min-height:70px;font-size:15px" placeholder="Câu trích dẫn..."></textarea></div>
-        </template>
-
-        <template v-else-if="writeType === 'quote'">
-          <div class="mf"><div class="ml">Câu trích dẫn</div><textarea class="mta" style="min-height:110px" placeholder="Nhập câu quote bạn muốn giữ lại..."></textarea></div>
-          <div class="mf"><div class="ml">Tác giả · Nguồn</div><input class="mi" placeholder="VD: Marcus Aurelius · Meditations"></div>
-          <div class="mf"><div class="ml">Cảm nhận của bạn</div><textarea class="mta" style="min-height:80px;font-size:15px;font-style:normal;font-family:'Nunito',sans-serif" placeholder="Câu này gợi lên điều gì?"></textarea></div>
-        </template>
-
-        <template v-else-if="writeType === 'book'">
-          <div class="mf"><div class="ml">Tên sách</div><input class="mi" placeholder="VD: Atomic Habits"></div>
-          <div class="mf"><div class="ml">Tác giả</div><input class="mi" placeholder="VD: James Clear"></div>
-          <div class="mf"><div class="ml">Cảm nhận</div><textarea class="mta" style="min-height:130px" placeholder="Điều gì trong cuốn này khiến bạn không thể ngủ được?"></textarea></div>
-        </template>
-
-        <template v-else>
-          <div class="mf"><div class="ml">Quote cho video</div><textarea class="mta" style="min-height:90px" placeholder="Câu quote bạn muốn làm video..."></textarea></div>
-          <div class="mf"><div class="ml">Tác giả · Nguồn</div><input class="mi" placeholder="VD: Marcus Aurelius · Meditations"></div>
-          <div style="background:var(--rust-s);border-radius:11px;padding:12px 16px;font-family:'Nunito',sans-serif;font-size:13px;color:var(--rust);font-weight:700">🎬 Sau khi lưu bạn có thể chọn style và xuất video</div>
-        </template>
-
-        <div class="m-footer">
-          <button class="m-cancel" @click="writeOpen = false">Hủy</button>
-          <button class="m-save" @click="savePost">✦ Lưu bài viết</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- VIDEO MODAL -->
-    <div :class="['overlay', { open: videoOpen }]" @click.self="videoOpen = false">
-      <div class="modal vmodal">
-        <div class="modal-hdr">
-          <div class="modal-title">🎬 Tạo video quote</div>
-          <button class="modal-x" @click="videoOpen = false">✕</button>
-        </div>
-        <div class="vm-layout">
-          <div class="vm-preview-col">
-            <div class="vm-preview" :style="{ background: vmBg }">
-              <div class="vm-prev-bg" :style="{ background: vmBg }"></div>
-              <div class="vm-prev-body">
-                <div class="vm-prev-ey">TRANG. BLOG</div>
-                <div class="vm-prev-q" :style="{ fontFamily: vmFont, fontStyle: vmItalic ? 'italic' : 'normal' }">
-                  "{{ vmQuote || 'Câu quote của bạn sẽ hiện ở đây.' }}"
-                </div>
-                <div class="vm-prev-a">— {{ vmAuthor || 'Tác giả' }}</div>
-              </div>
-            </div>
-            <div class="vm-preview-note">Preview · 9:16</div>
-          </div>
-
-          <div class="vm-controls">
-            <div class="mf">
-              <div class="ml">Nội dung</div>
-              <textarea class="mta" v-model="vmQuote" style="min-height:80px;font-size:14px" placeholder="Câu quote..."></textarea>
-            </div>
-            <div class="mf">
-              <div class="ml">Tác giả</div>
-              <input class="mi" v-model="vmAuthor" placeholder="Tác giả · Nguồn">
-            </div>
-            <div class="mf">
-              <div class="ml">Nền video</div>
-              <div class="bg-options">
-                <div
-                  v-for="bg in bgOptions"
-                  :key="bg.value"
-                  :class="['bg-opt', { active: vmBg === bg.value }]"
-                  :style="{ background: bg.value }"
-                  @click="vmBg = bg.value"
-                >
-                  <div class="bg-opt-label">{{ bg.label }}</div>
-                  <div class="bg-opt-check">✓</div>
-                </div>
-              </div>
-            </div>
-            <div class="mf">
-              <div class="ml">Font chữ</div>
-              <div class="font-row">
-                <div
-                  v-for="f in fontOptions"
-                  :key="f.family"
-                  :class="['font-btn', { active: vmFont === f.family }]"
-                  :style="{ fontFamily: f.family, fontStyle: f.italic ? 'italic' : 'normal' }"
-                  @click="vmFont = f.family; vmItalic = f.italic"
-                >{{ f.label }}</div>
-              </div>
-            </div>
-            <div class="m-footer" style="padding-top:12px;margin-top:0">
-              <button class="m-cancel" @click="videoOpen = false">Hủy</button>
-              <button class="m-save" @click="exportVideo">⬇ Xuất video</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- TOAST -->
     <div :class="['toast', { show: toastVisible }]">{{ toastMsg }}</div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Flame } from 'lucide-vue-next'
+
 const { posts, statsData, pending, error, fetchAll } = usePosts()
 await fetchAll()
 
@@ -273,9 +160,43 @@ const writeTypes = [
   { id: 'book', label: '📚 Sách' },
   { id: 'video', label: '🎬 Video' },
 ]
-function savePost() {
-  showToast('✦ Đã lưu bài viết!')
-  writeOpen.value = false
+const form = ref({ title: '', content: '', quote: '', author: '' })
+
+async function savePost() {
+  const mainText = form.value.title || form.value.quote || form.value.content || ''
+  if (!mainText.trim()) { showToast('Vui lòng nhập nội dung!'); return }
+
+  const slug = mainText.trim().toLowerCase().replace(/[^a-z0-9À-ɏ]+/g, '-').slice(0, 60) + '-' + Date.now()
+  const now = new Date()
+  const date = `${now.getDate()} tháng ${now.getMonth() + 1}, ${now.getFullYear()}`
+
+  const paragraphs = form.value.content
+    ? form.value.content.split('\n').filter(p => p.trim()).map(p => ({ type: 'p', text: p }))
+    : []
+  if (form.value.quote) paragraphs.push({ type: 'quote', text: form.value.quote, author: form.value.author })
+
+  try {
+    await $fetch('/api/posts', {
+      method: 'POST',
+      body: {
+        slug,
+        title: form.value.title || form.value.quote || 'Không có tiêu đề',
+        categories: [writeType.value],
+        date,
+        author: form.value.author || 'Hangngo',
+        readTime: '1 phút',
+        paragraphs,
+        embed: {},
+        hashtags: [],
+      }
+    })
+    showToast('✦ Đã lưu bài viết!')
+    form.value = { title: '', content: '', quote: '', author: '' }
+    writeOpen.value = false
+    await fetchAll()
+  } catch {
+    showToast('Lỗi khi lưu, thử lại nhé!')
+  }
 }
 
 // Video modal

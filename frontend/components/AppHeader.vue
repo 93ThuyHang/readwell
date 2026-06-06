@@ -1,7 +1,7 @@
 <template>
   <header class="site-header">
     <div class="hdr-inner">
-      <div class="hdr-logo">trang<em>.</em></div>
+      <div class="hdr-logo">Readwell<em>.</em></div>
       <nav class="hdr-nav">
         <a
           v-for="item in navItems"
@@ -11,7 +11,6 @@
         >{{ item }}</a>
       </nav>
       <div class="hdr-right">
-        <button class="hdr-btn" @click="$emit('open-write')">✦ Viết bài</button>
       </div>
     </div>
   </header>

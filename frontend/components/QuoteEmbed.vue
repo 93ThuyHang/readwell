@@ -3,7 +3,6 @@
     <div class="pq-text">"{{ embed.quote }}"</div>
     <div class="pq-source">
       — {{ embed.attribution }}<span v-if="embed.source"> · {{ embed.source }}</span>
-      <button class="pq-vid" @click="$emit('open-video', embed.quote)">🎬 Tạo video</button>
     </div>
   </div>
 </template>

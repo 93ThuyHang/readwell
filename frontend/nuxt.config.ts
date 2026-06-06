@@ -7,11 +7,12 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'trang. — Nhật ký đọc sách',
+      title: 'Readwell. — Nhật ký đọc sách',
       meta: [
         { name: 'description', content: 'Nhật ký đọc sách — những trang sách làm mình dừng lại.' },
       ],
       link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
         { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
         { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
         {
@@ -24,9 +25,17 @@ export default defineNuxtConfig({
 
   routeRules: {
     '/api/**': {
-      proxy: `${process.env.BACKEND_URL || 'http://localhost:4000'}/api/**`,
+      proxy: `${process.env.BACKEND_URL || 'http://localhost:5000'}/api/**`,
     },
   },
 
   compatibilityDate: '2024-04-03',
+
+  vite: {
+    resolve: {
+      alias: {
+        '#app-manifest': new URL('./.nuxt/manifest/meta/dev.json', import.meta.url).pathname,
+      },
+    },
+  },
 })
