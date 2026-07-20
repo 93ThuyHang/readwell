@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 
+// Không prerender: route đọc/ghi DB, nếu static thì PUT sẽ trả 405 trên Vercel
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const [posts, featuredQuote] = await Promise.all([
