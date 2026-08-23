@@ -1,8 +1,8 @@
 <template>
   <div class="pull-quote" :style="embed.borderColor ? { borderColor: embed.borderColor, background: embed.bg || 'var(--rust-s)' } : {}">
     <div class="pq-text">"{{ embed.quote }}"</div>
-    <div class="pq-source">
-      — {{ embed.attribution }}<span v-if="embed.source"> · {{ embed.source }}</span>
+    <div v-if="embed.attribution || embed.source" class="pq-source">
+      <template v-if="embed.attribution">— {{ embed.attribution }}</template><span v-if="embed.source">{{ embed.attribution ? ' · ' : '' }}{{ embed.source }}</span>
     </div>
   </div>
 </template>

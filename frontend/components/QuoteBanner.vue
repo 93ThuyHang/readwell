@@ -1,5 +1,5 @@
 <template>
-  <div class="dq-banner">
+  <div v-if="quotes.length || pending" class="dq-banner">
     <div class="dqb-eyebrow" style="display:inline-flex;align-items:center;gap:6px"><Sparkles :size="13" /> Câu khích lệ hôm nay</div>
 
     <template v-if="quotes.length">
@@ -19,10 +19,6 @@
 
     <template v-else-if="pending">
       <div class="dqb-text" style="opacity:0.4">Đang tải...</div>
-    </template>
-
-    <template v-else>
-      <div class="dqb-text" style="opacity:0.4">Chưa có câu khích lệ nào.</div>
     </template>
   </div>
 </template>
