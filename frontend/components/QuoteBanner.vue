@@ -20,6 +20,10 @@
     <template v-else-if="pending">
       <div class="dqb-text" style="opacity:0.4">Đang tải...</div>
     </template>
+
+    <template v-else>
+      <div class="dqb-text" style="opacity:0.4">Chưa có câu khích lệ nào.</div>
+    </template>
   </div>
 </template>
 
@@ -28,31 +32,20 @@ import { Sparkles, RefreshCw } from 'lucide-vue-next'
 
 type Quote = { q: string; a: string }
 
-const FALLBACK: Quote[] = [
-  { q: '"Bạn không cần phải vĩ đại để bắt đầu — nhưng phải bắt đầu để trở nên vĩ đại."', a: '— Zig Ziglar' },
-  { q: '"Đọc sách là trò chuyện với những bộ óc vĩ đại nhất của nhân loại."', a: '— Descartes' },
-  { q: '"Mỗi cuốn sách bạn đọc là một cuộc đời bạn sống thêm."', a: '— George R.R. Martin' },
-]
-
 const quotes = ref<Quote[]>([])
 const pending = ref(true)
 const qi = ref(0)
 const fading = ref(false)
 
-const currentQ = computed(() => quotes.value[qi.value] ?? FALLBACK[0])
+const currentQ = computed(() => quotes.value[qi.value] ?? { q: '', a: '' })
 
 onMounted(async () => {
   try {
+    // Chỉ lấy quote từ DB, không dùng dữ liệu hardcode
     const data = await $fetch<Quote[]>('/api/featured-quote')
-    const dbQuotes = data?.length ? data : []
-    // Merge DB quotes với FALLBACK, bỏ trùng, luôn có đủ quotes để cycle
-    const merged = [...dbQuotes]
-    for (const fb of FALLBACK) {
-      if (!merged.some((x) => x.q === fb.q)) merged.push(fb)
-    }
-    quotes.value = merged
+    quotes.value = data?.length ? data : []
   } catch {
-    quotes.value = FALLBACK
+    quotes.value = []
   } finally {
     pending.value = false
   }
