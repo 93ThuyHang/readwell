@@ -47,6 +47,8 @@ export default async function EditPostPage({ params }: { params: { slug: string 
       fontSize: String(rawVideo.fontSize ?? '21px'),
     } : null,
     hashtags: post.hashtags,
+    status: post.status,
+    publishAt: post.publishAt ? post.publishAt.toISOString() : null,
   }
 
   return (

@@ -6,6 +6,24 @@ export const dynamic = 'force-dynamic'
 
 const PAGE_SIZE = 50
 
+function StatusBadge({ status, publishAt }: { status: string; publishAt: Date | null }) {
+  const scheduled = status === 'published' && publishAt && new Date(publishAt) > new Date()
+  if (status === 'draft') {
+    return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-600 font-medium">Nháp</span>
+  }
+  if (scheduled) {
+    return (
+      <span className="inline-flex flex-col px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-700 font-medium">
+        <span>Hẹn giờ</span>
+        <span className="text-[10px] font-normal text-blue-500">
+          {new Date(publishAt as Date).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+        </span>
+      </span>
+    )
+  }
+  return <span className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-green-50 text-green-700 font-medium">Đã đăng</span>
+}
+
 export default async function PostsPage({
   searchParams,
 }: {
@@ -26,6 +44,8 @@ export default async function PostsPage({
         categories: true,
         author: true,
         likes: true,
+        status: true,
+        publishAt: true,
         createdAt: true,
         _count: { select: { commentsList: true } },
       },
@@ -67,6 +87,9 @@ export default async function PostsPage({
                 Bình luận
               </th>
               <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 Ngày tạo
               </th>
               <th className="px-4 py-3"></th>
@@ -93,6 +116,9 @@ export default async function PostsPage({
                 </td>
                 <td className="px-4 py-4 text-center text-gray-600">❤️ {post.likes}</td>
                 <td className="px-4 py-4 text-center text-gray-600">💬 {post._count.commentsList}</td>
+                <td className="px-4 py-4">
+                  <StatusBadge status={post.status} publishAt={post.publishAt} />
+                </td>
                 <td className="px-4 py-4 text-gray-500 text-xs">
                   {new Date(post.createdAt).toLocaleDateString('vi-VN')}
                 </td>

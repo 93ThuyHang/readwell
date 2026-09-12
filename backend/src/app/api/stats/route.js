@@ -6,17 +6,27 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
+    const now = new Date()
+    const publicFilter = {
+      status: 'published',
+      OR: [{ publishAt: null }, { publishAt: { lte: now } }],
+    }
+
     const [posts, featuredQuote] = await Promise.all([
       prisma.post.findMany({
+        where: publicFilter,
         select: { embed: true, bookEmbed: true, createdAt: true },
         orderBy: { createdAt: 'desc' },
       }),
       prisma.featuredQuote.findUnique({ where: { id: 1 } }),
     ])
 
-    // Đếm videoEmbed qua raw SQL vì Prisma client cũ chưa biết field này
+    // Đếm videoEmbed qua raw SQL vì Prisma client cũ chưa biết field này (chỉ tính bài công khai)
     const videoRows = await prisma.$queryRaw`
-      SELECT COUNT(*)::int AS count FROM "Post" WHERE "videoEmbed" IS NOT NULL
+      SELECT COUNT(*)::int AS count FROM "Post"
+      WHERE "videoEmbed" IS NOT NULL
+        AND "status" = 'published'
+        AND ("publishAt" IS NULL OR "publishAt" <= ${now})
     `
     const videos = videoRows[0]?.count ?? 0
 

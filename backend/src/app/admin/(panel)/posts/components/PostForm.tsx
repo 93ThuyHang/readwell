@@ -42,6 +42,8 @@ type PostData = {
   bookEmbed: BookEmbed | null
   videoEmbed: VideoEmbed | null
   hashtags: string[]
+  status: string
+  publishAt: string | null
 }
 
 type PostType = 'note' | 'quote' | 'video' | 'book'
@@ -73,6 +75,8 @@ const defaultPost: PostData = {
   bookEmbed: null,
   videoEmbed: null,
   hashtags: [],
+  status: 'published',
+  publishAt: null,
 }
 
 const defaultVideoEmbed: VideoEmbed = {
@@ -119,6 +123,22 @@ function vietnameseToIso(viDate: string): string {
   return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`
 }
 
+// ISO (UTC) -> giá trị cho <input type="datetime-local"> theo giờ địa phương
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+// giá trị datetime-local (giờ địa phương) -> ISO (UTC) để gửi lên API
+function localInputToIso(local: string): string | null {
+  if (!local) return null
+  const d = new Date(local)
+  return isNaN(d.getTime()) ? null : d.toISOString()
+}
+
 function slugify(text: string) {
   return text
     .toLowerCase()
@@ -157,6 +177,9 @@ export default function PostForm({
   const [rawHashtags, setRawHashtags] = useState((initialData?.hashtags ?? []).join(', '))
   const [rawBookTags, setRawBookTags] = useState((initialData?.bookEmbed?.tags ?? []).join(', '))
   const [contentExpanded, setContentExpanded] = useState(false)
+  const [scheduleEnabled, setScheduleEnabled] = useState(!!initialData?.publishAt)
+  const [scheduleValue, setScheduleValue] = useState(isoToLocalInput(initialData?.publishAt ?? null))
+  const isDraft = data.status === 'draft'
 
   function setField<K extends keyof PostData>(key: K, value: PostData[K]) {
     setData((prev) => ({ ...prev, [key]: value }))
@@ -184,13 +207,21 @@ export default function PostForm({
     setField('paragraphs', htmlToParagraphs(html))
   }
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function save(status: 'draft' | 'published') {
     setLoading(true)
     setError('')
 
+    const publishAt =
+      status === 'published' && scheduleEnabled ? localInputToIso(scheduleValue) : null
+
+    // Bản nháp có thể chưa có tiêu đề -> sinh slug tạm để tránh trùng chuỗi rỗng
+    const slug = data.slug.trim() || (isEdit ? data.slug : `nhap-${Date.now()}`)
+
     const payload: PostData = {
       ...data,
+      slug,
+      status,
+      publishAt,
       paragraphs: data.paragraphs.filter((p) => p.trim() !== ''),
       bookEmbed: postType === 'book' ? data.bookEmbed : null,
       videoEmbed: postType === 'video' ? data.videoEmbed : null,
@@ -218,6 +249,20 @@ export default function PostForm({
     }
   }
 
+  // Đăng / đặt lịch — qua form submit nên vẫn kiểm tra các trường bắt buộc
+  function handlePublish(e: FormEvent) {
+    e.preventDefault()
+    save('published')
+  }
+
+  // Lưu nháp — cho phép lưu kể cả khi chưa điền đủ, không kiểm tra required
+  function handleSaveDraft() {
+    save('draft')
+  }
+
+  const scheduleInPast =
+    scheduleEnabled && scheduleValue !== '' && new Date(scheduleValue).getTime() <= Date.now()
+
   const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400'
   const labelClass = 'block text-sm font-medium text-gray-700 mb-1'
 
@@ -227,7 +272,7 @@ export default function PostForm({
   return (
     <div className="flex gap-6 items-start">
       {/* Left: form */}
-      <form onSubmit={handleSubmit} className="space-y-6 flex-1 min-w-0">
+      <form onSubmit={handlePublish} className="space-y-6 flex-1 min-w-0">
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">{error}</div>
         )}
@@ -646,6 +691,46 @@ export default function PostForm({
           </>
         )}
 
+        {/* Lịch đăng */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+          <h2 className="text-base font-semibold text-gray-800">Lịch đăng</h2>
+
+          {isEdit && isDraft && (
+            <div className="bg-amber-50 border border-amber-200 text-amber-700 px-3 py-2 rounded-lg text-xs">
+              Bài này đang là <strong>bản nháp</strong> — chưa hiển thị trên trang chủ. Bấm “Đăng ngay” hoặc “Đặt lịch đăng” để công khai.
+            </div>
+          )}
+
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={scheduleEnabled}
+              onChange={(e) => setScheduleEnabled(e.target.checked)}
+              className="w-4 h-4 accent-yellow-400"
+            />
+            Hẹn giờ đăng lên trang chủ
+          </label>
+
+          {scheduleEnabled ? (
+            <div>
+              <label className={labelClass}>Thời gian đăng</label>
+              <input
+                type="datetime-local"
+                value={scheduleValue}
+                onChange={(e) => setScheduleValue(e.target.value)}
+                className={inputClass}
+              />
+              {scheduleInPast ? (
+                <p className="text-xs text-amber-600 mt-1">Thời gian đã qua — bài sẽ hiển thị ngay khi bấm “Đặt lịch đăng”.</p>
+              ) : (
+                <p className="text-xs text-gray-400 mt-1">Bài sẽ tự động hiện trên trang chủ đúng thời điểm này.</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-xs text-gray-400">Không hẹn giờ — bài hiển thị ngay khi bấm “Đăng ngay”.</p>
+          )}
+        </div>
+
         <div className="flex items-center justify-end gap-3 pb-4">
           <button
             type="button"
@@ -655,11 +740,19 @@ export default function PostForm({
             Hủy
           </button>
           <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={loading}
+            className="px-5 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Đang lưu...' : 'Lưu nháp'}
+          </button>
+          <button
             type="submit"
             disabled={loading}
             className="px-5 py-2 text-sm font-medium text-stone-900 bg-yellow-400 rounded-lg hover:bg-yellow-500 transition-colors disabled:opacity-50"
           >
-            {loading ? 'Đang lưu...' : isEdit ? 'Lưu thay đổi' : 'Tạo bài viết'}
+            {loading ? 'Đang lưu...' : scheduleEnabled && !scheduleInPast ? 'Đặt lịch đăng' : 'Đăng ngay'}
           </button>
         </div>
       </form>
